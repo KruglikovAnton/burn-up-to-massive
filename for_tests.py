@@ -1,3 +1,4 @@
+# file for manual test and time estimation
 import numpy as np
 from matplotlib import pyplot as plt
 import time
@@ -21,31 +22,30 @@ for cell in some_dict.keys():
                                                  loadings=some_dict[cell]['fuel_loadings'],
                                                  current_concentrations=some_dict[cell]['N'])
 
-print(some_dict)
-# burn_ups = np.zeros((6, 8))
-# for key, value in some_dict.items():
-#     burn_ups[int(key[-1]) - 1][int(key[-3]) - 1] = value['burn_up'][1]
-# t2 = time.time()
-# print(f'time is {t2-t1}')
-# burn_ups = np.around(burn_ups*100, decimals=1)
-# print(burn_ups)
-# x_labels = [str(i) for i in range(1, 9)]
-# y_labels = [str(i) for i in range(1, 7)]
-# fig, ax = plt.subplots()
-# im = ax.imshow(burn_ups)
-# ax.set_xticks(range(0, 8), labels=x_labels)
-# ax.set_yticks(range(0, 6), labels=y_labels)
-# for i in range(1, 5):
-#     for j in range(1, 5):
-#         text = ax.text(j, i, burn_ups[i, j],
-#                        ha="center", va="center", color="w")
-#
-#
-# x_minorLocator = AutoMinorLocator(2)
-# y_minorLocator = AutoMinorLocator(2)
-# ax.xaxis.set_minor_locator(x_minorLocator)
-# ax.yaxis.set_minor_locator(y_minorLocator)
-# ax.xaxis.tick_top()
-# ax.tick_params(length=0, which='both', axis='both')
-# ax.grid(which='minor', color="w", linestyle='-', linewidth=1)
-# plt.show()
+burn_ups = np.zeros((6, 8))
+for key, value in some_dict.items():
+    burn_ups[int(key[-1]) - 1][int(key[-3]) - 1] = value['burn_up'][0]
+t2 = time.time()
+print(f'time is {t2-t1}')
+burn_ups = np.around(burn_ups*100, decimals=1)
+print(burn_ups)
+x_labels = [str(i) for i in range(1, 9)]
+y_labels = [str(i) for i in range(1, 7)]
+fig, ax = plt.subplots()
+im = ax.imshow(burn_ups)
+ax.set_xticks(range(0, 8), labels=x_labels)
+ax.set_yticks(range(0, 6), labels=y_labels)
+for i in range(1, 5):
+    for j in range(1, 5):
+        text = ax.text(j, i, burn_ups[i, j],
+                       ha="center", va="center", color="w")
+
+
+x_minorLocator = AutoMinorLocator(2)
+y_minorLocator = AutoMinorLocator(2)
+ax.xaxis.set_minor_locator(x_minorLocator)
+ax.yaxis.set_minor_locator(y_minorLocator)
+ax.xaxis.tick_top()
+ax.tick_params(length=0, which='both', axis='both')
+ax.grid(which='minor', color="w", linestyle='-', linewidth=1)
+plt.show()

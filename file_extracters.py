@@ -145,6 +145,7 @@ def loadings_file_reader(loadings_file: str):
                 string_number_in_table += 1
                 continue
             if reading_start_loadings:
+                #line for comments
                 if line.startswith('#'):
                     continue
                 else:
@@ -162,12 +163,11 @@ def average_burn_up(volumes: np.array, loadings: np.array, current_concentration
     for i in range(0, volumes.size, 360):
         fuel_elements_volumes.append(np.sum(volumes[i: i + 360]))
     initial_concentrations = loadings * n_av / a_u235 / fuel_elements_volumes
-    burn_ups = (initial_concentrations.repeat(n_zones_in_tube) - current_concentrations) * volumes / \
-               (initial_concentrations.repeat(n_zones_in_tube) * volumes)
+    # assert(initial_concentrations.repeat(n_zones_in_tube))
+    burn_ups = (initial_concentrations.repeat(n_zones_in_tube) - current_concentrations) / initial_concentrations.repeat(n_zones_in_tube)
     avg_burn_up = np.sum((burn_ups * volumes)) / np.sum(volumes)
     max_burn_up = np.max(burn_ups)
     min_burn_up = np.min(burn_ups)
-    print(initial_concentrations.repeat(n_zones_in_tube) - current_concentrations)
     return avg_burn_up, max_burn_up, min_burn_up
 
 # def loadings_reader_and_changer()
