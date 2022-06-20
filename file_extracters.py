@@ -1,12 +1,62 @@
 import numpy as np
 
+def loadings_file_reader(loadings_file: str) -> dict:
+    """ The function reads input loadings.txt file and creates dict with zones' numbers,
+    start materials for each fuel assembly and also start loadings
+    """
+    cells_dict = {}
+    cells_order = ['cell_2_2', 'cell_2_3', 'cell_2_4', 'cell_2_5', 'cell_3_2', 'cell_3_3', 'cell_3_4', 'cell_3_5',
+                   'cell_4_2', 'cell_4_3', 'cell_4_4', 'cell_4_5', 'cell_5_2', 'cell_5_3', 'cell_5_4', 'cell_5_5']
+    cells_iterator = iter(cells_order)
+    with open(loadings_file, 'r') as file:
+        reading_start_materials = False
+        reading_start_loadings = False
+        string_number_in_table = 2
+        for line in file:
+            if line.startswith('#'):
+                continue
+            if line.startswith('Start mater'):
+                reading_start_materials = True
+                continue
+            if line.startswith('Start loadings'):
+                reading_start_loadings = True
+                continue
+            if reading_start_materials:
+                if string_number_in_table > 5:
+                    reading_start_materials = False
+                    continue
+                assert line.split()[0].isdigit(), 'this line should contain only numbers'
+                cells_dict[f"cell_2_{string_number_in_table}"], \
+                cells_dict[f"cell_3_{string_number_in_table}"], \
+                cells_dict[f"cell_4_{string_number_in_table}"], \
+                cells_dict[f"cell_5_{string_number_in_table}"] = \
+                    {'zones_numbers': []}, {'zones_numbers': []}, {'zones_numbers': []}, {'zones_numbers': []}
+                cells_dict[f"cell_2_{string_number_in_table}"]['zones_numbers'], \
+                cells_dict[f"cell_3_{string_number_in_table}"]['zones_numbers'], \
+                cells_dict[f"cell_4_{string_number_in_table}"]['zones_numbers'], \
+                cells_dict[f"cell_5_{string_number_in_table}"]['zones_numbers'] = \
+                    map(lambda x: np.arange(int(x), int(x) + 2160), line.split())
+                string_number_in_table += 1
+                continue
+            if reading_start_loadings:
+                #line for comments
+                if line.startswith('#'):
+                    continue
+                else:
+                    cells_dict[next(cells_iterator)].update(fuel_loadings=np.array(list(map(float, line.split()))))
+                    continue
+    return cells_dict
+
+
+
+
 
 def add_material_from_pdc_for_burn_up(file_to_read: str,
                                       materials: list,
                                       dict_of_results: dict,
                                       nuclides: list = ['u235'],
                                       ) -> dict:
-    """ Adding nuclear densities from pdc files
+    """ Adding nuclear densities from chosen pdc file to already existing dictionary
     """
 
     dict_of_results['N'] = []
@@ -90,7 +140,7 @@ def add_material_from_file(file_to_read: str, materials: list, nuclides: list, d
 
 
 def rez_reader(rez_file: str, output_dict: dict, materials: list):
-    """Extracting volumes from rez_file and writing them to output_file
+    """Extracting volumes from rez_file and writing them to output_dict
     """
 
     with open(rez_file, 'r') as file_to_read:
@@ -109,49 +159,7 @@ def rez_reader(rez_file: str, output_dict: dict, materials: list):
         output_dict['volume'] = np.array(output_dict['volume']).astype('float32')
 
 
-def loadings_file_reader(loadings_file: str):
-    cells_dict = {}
-    cells_order = ['cell_2_2', 'cell_2_3', 'cell_2_4', 'cell_2_5', 'cell_3_2', 'cell_3_3', 'cell_3_4', 'cell_3_5',
-                   'cell_4_2', 'cell_4_3', 'cell_4_4', 'cell_4_5', 'cell_5_2', 'cell_5_3', 'cell_5_4', 'cell_5_5']
-    cells_iterator = iter(cells_order)
-    with open(loadings_file, 'r') as file:
-        reading_start_materials = False
-        reading_start_loadings = False
-        string_number_in_table = 2
-        for line in file:
-            if line.startswith('#'):
-                continue
-            if line.startswith('Start mater'):
-                reading_start_materials = True
-                continue
-            if line.startswith('Start loadings'):
-                reading_start_loadings = True
-                continue
-            if reading_start_materials:
-                if string_number_in_table > 5:
-                    reading_start_materials = False
-                    continue
-                assert line.split()[0].isdigit(), 'this line should contain only numbers'
-                cells_dict[f"cell_2_{string_number_in_table}"], \
-                cells_dict[f"cell_3_{string_number_in_table}"], \
-                cells_dict[f"cell_4_{string_number_in_table}"], \
-                cells_dict[f"cell_5_{string_number_in_table}"] = \
-                    {'zones_numbers': []}, {'zones_numbers': []}, {'zones_numbers': []}, {'zones_numbers': []}
-                cells_dict[f"cell_2_{string_number_in_table}"]['zones_numbers'], \
-                cells_dict[f"cell_3_{string_number_in_table}"]['zones_numbers'], \
-                cells_dict[f"cell_4_{string_number_in_table}"]['zones_numbers'], \
-                cells_dict[f"cell_5_{string_number_in_table}"]['zones_numbers'] = \
-                    map(lambda x: np.arange(int(x), int(x) + 2160), line.split())
-                string_number_in_table += 1
-                continue
-            if reading_start_loadings:
-                #line for comments
-                if line.startswith('#'):
-                    continue
-                else:
-                    cells_dict[next(cells_iterator)].update(fuel_loadings=np.array(list(map(float, line.split()))))
-                    continue
-    return cells_dict
+
 
 
 def average_burn_up(volumes: np.array, loadings: np.array, current_concentrations: np.array,
