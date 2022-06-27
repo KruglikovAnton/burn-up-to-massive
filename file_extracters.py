@@ -79,16 +79,28 @@ def add_material_from_pdc_for_burn_up(file_to_read: str,
         return dict_of_results
 
 
-def add_material_from_pdc_for_table(file_to_read: str, materials: list, nuclides: list = ['u235'],
+def add_material_from_pdc_for_table(fin_file_to_read: str,
+                                    pdc_file_to_read: str,
+                                    materials: list,
+                                    nuclides: list = ['u235', 'u238', 'pu39', 'xe35', 'sm49'],
                                     dict_of_results=None) -> dict:
     """ Adding chosen materials and nuclear densities from pdc files
     """
-
+    print(fin_file_to_read)
+    print(pdc_file_to_read)
     if dict_of_results is None:
-        dict_of_results = {'MATR': [], 'pdc': [], 'N': [], 'nuclide': []}
+        # dict_of_results = {'MATR': [], 'pdc': [], 'N': [], 'nuclide': []}
+        dict_of_results = {}
+        for matr_number in range(len(materials)):
+            for nuclide in nuclides:
+                dict_of_results[f'{nuclide} in mat{matr_number}'] = []
+        dict_of_results['Keff'] = []
 
-    with open(file_to_read, 'r') as file:
-        pdc_number = file_to_read[file_to_read.find('.') + 1:]
+    with open(fin_file_to_read, 'r') as fin_file, open(pdc_file_to_read, 'r') as pdc_file:
+        for line in fin_file:
+            if line.startswith(' Keff comb.'):
+                print(line.split()[3])
+
         scanning = False
         for line in file:
             if line.split()[0] == 'MATR' and int(line.split()[1]) in materials:
