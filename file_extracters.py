@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def loadings_file_reader(loadings_file: str) -> dict:
     """ The function reads input loadings.txt file and creates dict with zones' numbers,
     start materials for each fuel assembly and also start loadings
@@ -39,16 +40,13 @@ def loadings_file_reader(loadings_file: str) -> dict:
                 string_number_in_table += 1
                 continue
             if reading_start_loadings:
-                #line for comments
+                # line for comments
                 if line.startswith('#'):
                     continue
                 else:
                     cells_dict[next(cells_iterator)].update(fuel_loadings=np.array(list(map(float, line.split()))))
                     continue
     return cells_dict
-
-
-
 
 
 def add_material_from_pdc_for_burn_up(file_to_read: str,
@@ -86,23 +84,18 @@ def add_material_from_pdc_for_table(fin_file_to_read: str,
                                     dict_of_results=None) -> dict:
     """ Adding chosen materials and nuclear densities from pdc files
     """
-    print(fin_file_to_read)
-    print(pdc_file_to_read)
     if dict_of_results is None:
-        # dict_of_results = {'MATR': [], 'pdc': [], 'N': [], 'nuclide': []}
         dict_of_results = {}
-        for matr_number in range(len(materials)):
+        for matr_number in materials:
             for nuclide in nuclides:
                 dict_of_results[f'{nuclide} in mat{matr_number}'] = []
         dict_of_results['Keff'] = []
-
     with open(fin_file_to_read, 'r') as fin_file, open(pdc_file_to_read, 'r') as pdc_file:
         for line in fin_file:
             if line.startswith(' Keff comb.'):
-                print(line.split()[3])
-
+                dict_of_results['Keff'].append(line.split()[3])
         scanning = False
-        for line in file:
+        for line in pdc_file:
             if line.split()[0] == 'MATR' and int(line.split()[1]) in materials:
                 matr_number = line.split()[1]
                 scanning = True
@@ -114,11 +107,15 @@ def add_material_from_pdc_for_table(fin_file_to_read: str,
                 nuclide = line.split()[0]
                 if nuclide in list(map(lambda x: x.upper(), nuclides)):
                     adens = line.split()[1]
-                    dict_of_results['MATR'].append(matr_number)
-                    dict_of_results['pdc'].append(pdc_number)
-                    dict_of_results['N'].append(adens)
-                    dict_of_results['nuclide'].append(nuclide)
-        return dict_of_results
+                    dict_of_results[f'{nuclide.lower()} in mat{matr_number}'].append(adens)
+    for key, value in dict_of_results.items():
+        # в 1й топливной зоне всегда содержится 235u, в то время как в твс с свежим топливом отсутствуют pu, xe и sm,
+        # поэтому данные ключи необходимо заполнить нулями
+        if len(value) != len(dict_of_results['u235 in mat15563']):
+            dict_of_results[key].append('0')
+    # for debugging
+    print(len(dict_of_results['Keff']), len(dict_of_results[f'u235 in mat20000']), fin_file_to_read, pdc_file_to_read)
+    return dict_of_results
 
 
 def add_material_from_file(file_to_read: str, materials: list, nuclides: list, dict_of_results=None) -> dict:
@@ -171,9 +168,6 @@ def rez_reader(rez_file: str, output_dict: dict, materials: list):
         output_dict['volume'] = np.array(output_dict['volume']).astype('float32')
 
 
-
-
-
 def average_burn_up(volumes: np.array, loadings: np.array, current_concentrations: np.array,
                     n_zones_in_tube: int = 360, n_av: object = 0.6023, a_u235: object = 235.043929) -> float:
     """
@@ -184,7 +178,8 @@ def average_burn_up(volumes: np.array, loadings: np.array, current_concentration
         fuel_elements_volumes.append(np.sum(volumes[i: i + 360]))
     initial_concentrations = loadings * n_av / a_u235 / fuel_elements_volumes
     # assert(initial_concentrations.repeat(n_zones_in_tube))
-    burn_ups = (initial_concentrations.repeat(n_zones_in_tube) - current_concentrations) / initial_concentrations.repeat(n_zones_in_tube)
+    burn_ups = (initial_concentrations.repeat(
+        n_zones_in_tube) - current_concentrations) / initial_concentrations.repeat(n_zones_in_tube)
     avg_burn_up = np.sum((burn_ups * volumes)) / np.sum(volumes)
     max_burn_up = np.max(burn_ups)
     min_burn_up = np.min(burn_ups)
