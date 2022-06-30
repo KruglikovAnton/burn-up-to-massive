@@ -119,7 +119,22 @@ def add_material_from_pdc_for_table(fin_file_to_read: str,
 
 def wolfram_block_identifier(mcu_input_file : str):
     n_line = 350000
-    lines = islice(mcu_input_file, n_line, None)
+    with open (mcu_input_file, 'r') as file:
+        lines = islice(file, n_line, None)
+        scanning = False
+        for line in lines:
+            if line.startswith('NET    L1'):
+                scanning = True
+            else:
+                continue
+            if scanning:
+                if line.startswith('END'):
+                    break
+                else:
+                    print(line)
+
+
+
 
 def add_material_from_file(file_to_read: str, materials: list, nuclides: list, dict_of_results=None) -> dict:
     """Adding chosen materials and nuclear densities from var file
