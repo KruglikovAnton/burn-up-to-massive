@@ -1,5 +1,5 @@
 import numpy as np
-
+from itertools import islice
 
 def loadings_file_reader(loadings_file: str) -> dict:
     """ The function reads input loadings.txt file and creates dict with zones' numbers,
@@ -117,6 +117,9 @@ def add_material_from_pdc_for_table(fin_file_to_read: str,
     print(len(dict_of_results['Keff']), len(dict_of_results[f'u235 in mat20000']), fin_file_to_read, pdc_file_to_read)
     return dict_of_results
 
+def wolfram_block_identifier(mcu_input_file : str):
+    n_line = 350000
+    lines = islice(mcu_input_file, n_line, None)
 
 def add_material_from_file(file_to_read: str, materials: list, nuclides: list, dict_of_results=None) -> dict:
     """Adding chosen materials and nuclear densities from var file
