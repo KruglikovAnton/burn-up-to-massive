@@ -1,6 +1,7 @@
 import numpy as np
 from itertools import islice
 
+
 def loadings_file_reader(loadings_file: str) -> dict:
     """ The function reads input loadings.txt file and creates dict with zones' numbers,
     start materials for each fuel assembly and also start loadings
@@ -90,6 +91,7 @@ def add_material_from_pdc_for_table(fin_file_to_read: str,
             for nuclide in nuclides:
                 dict_of_results[f'{nuclide} in mat{matr_number}'] = []
         dict_of_results['Keff'] = []
+        dict_of_results['ampule'] = []
     with open(fin_file_to_read, 'r') as fin_file, open(pdc_file_to_read, 'r') as pdc_file:
         for line in fin_file:
             if line.startswith(' Keff comb.'):
@@ -111,29 +113,33 @@ def add_material_from_pdc_for_table(fin_file_to_read: str,
     for key, value in dict_of_results.items():
         # в 1й топливной зоне всегда содержится 235u, в то время как в твс с свежим топливом отсутствуют pu, xe и sm,
         # поэтому данные ключи необходимо заполнить нулями
-        if len(value) != len(dict_of_results['u235 in mat15563']):
+        if len(value) != len(dict_of_results['u235 in mat15563']) and key != 'ampule':
             dict_of_results[key].append('0')
-    # for debugging
-    print(len(dict_of_results['Keff']), len(dict_of_results[f'u235 in mat20000']), fin_file_to_read, pdc_file_to_read)
     return dict_of_results
 
-def wolfram_block_identifier(mcu_input_file : str):
+
+def wolfram_block_identifier(mcu_input_file: str):
     n_line = 350000
-    with open (mcu_input_file, 'r') as file:
+    ampules_cells = ['RI64', 'RI73', 'MH64', 'MH74', 'RI83']
+    with open(mcu_input_file, 'r') as file:
         lines = islice(file, n_line, None)
         scanning = False
         for line in lines:
             if line.startswith('NET    L1'):
                 scanning = True
-            else:
                 continue
             if scanning:
                 if line.startswith('END'):
                     break
                 else:
-                    print(line)
-
-
+                    if line.startswith('T04'):
+                        ampule_name = line.split()[6]
+                        if ampule_name in ampules_cells:
+                            return 1
+                        else:
+                            return 0
+                    else:
+                        continue
 
 
 def add_material_from_file(file_to_read: str, materials: list, nuclides: list, dict_of_results=None) -> dict:
