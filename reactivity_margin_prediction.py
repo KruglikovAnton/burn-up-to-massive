@@ -25,7 +25,7 @@ for path in [folder for folder in p.iterdir() if folder.is_dir()]:
                         pdc_path = fin_path.with_suffix('.PDC')
                         file_path = fin_path.parent / fin_path.stem
                         print(f'file: {file_path}')
-                        # Аналогично могли забыть скопировать файл самого варианта, а только FIN и PDC, поэтому
+                        # Аналогично, могли забыть скопировать файл самого варианта, а только FIN и PDC, поэтому
                         # дополнительно проверяем присутствие входного файла, это текстовый файл такого же названия,
                         # но без расширения.
                         if pdc_path.exists() and file_path.exists():

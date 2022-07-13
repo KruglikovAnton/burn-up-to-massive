@@ -78,6 +78,44 @@ def add_material_from_pdc_for_burn_up(file_to_read: str,
         return dict_of_results
 
 
+
+
+
+def add_material_from_pdc_for_prediction(pdc_file_to_read: str,
+                                         materials: list,
+                                         nuclides: list = ['u235', 'u238', 'pu39', 'xe35', 'sm49']) -> dict:
+    """ Adding chosen materials and nuclear densities from pdc files for prediction
+    """
+    dict_of_results = {}
+    for matr_number in materials:
+        for nuclide in nuclides:
+            dict_of_results[f'{nuclide} in mat{matr_number}'] = []
+    with open(pdc_file_to_read, 'r') as pdc_file:
+        scanning=False
+        for line in pdc_file:
+            if line.split()[0] == 'MATR' and int(line.split()[1]) in materials:
+                matr_number = line.split()[1]
+                scanning = True
+                continue
+            if (line.split()[0] == 'MATR' and int(line.split()[1]) not in materials) or line.startswith('stop'):
+                scanning = False
+                continue
+            if scanning:
+                nuclide = line.split()[0]
+                if nuclide in list(map(lambda x: x.upper(), nuclides)):
+                    adens = line.split()[1]
+                    dict_of_results[f'{nuclide.lower()} in mat{matr_number}'].append(adens)
+    for key, value in dict_of_results.items():
+        # в 1й топливной зоне всегда содержится 235u, в то время как в твс с свежим топливом отсутствуют pu, xe и sm,
+        # поэтому данные ключи необходимо заполнить нулями
+        if len(value) != len(dict_of_results['u235 in mat15563']) and key != 'ampule':
+            dict_of_results[key].append('0')
+    return dict_of_results
+
+
+
+
+
 def add_material_from_pdc_for_table(fin_file_to_read: str,
                                     pdc_file_to_read: str,
                                     materials: list,
@@ -118,6 +156,44 @@ def add_material_from_pdc_for_table(fin_file_to_read: str,
     return dict_of_results
 
 
+def add_material_from_pdc_for_table_avg_fe(fin_file_to_read: str,
+                                           pdc_file_to_read: str,
+                                           materials: list,
+                                           nuclides: list = ['u235', 'u238', 'pu39', 'xe35', 'sm49'],
+                                            dict_of_results=None) -> dict:
+    """ Adding chosen materials and nuclear densities from pdc files
+    """
+    if dict_of_results is None:
+        dict_of_results = {}
+        for matr_number in materials:
+            for nuclide in nuclides:
+                dict_of_results[f'{nuclide} in mat{matr_number}'] = []
+        dict_of_results['Keff'] = []
+        dict_of_results['ampule'] = []
+    with open(fin_file_to_read, 'r') as fin_file, open(pdc_file_to_read, 'r') as pdc_file:
+        for line in fin_file:
+            if line.startswith(' Keff comb.'):
+                dict_of_results['Keff'].append(line.split()[3])
+        scanning = False
+        for line in pdc_file:
+            if line.split()[0] == 'MATR' and int(line.split()[1]) in materials:
+                matr_number = line.split()[1]
+                scanning = True
+                continue
+            if (line.split()[0] == 'MATR' and int(line.split()[1]) not in materials) or line.startswith('stop'):
+                scanning = False
+                continue
+            if scanning:
+                nuclide = line.split()[0]
+                if nuclide in list(map(lambda x: x.upper(), nuclides)):
+                    adens = line.split()[1]
+                    dict_of_results[f'{nuclide.lower()} in mat{matr_number}'].append(adens)
+    for key, value in dict_of_results.items():
+        # в 1й топливной зоне всегда содержится 235u, в то время как в твс с свежим топливом отсутствуют pu, xe и sm,
+        # поэтому данные ключи необходимо заполнить нулями
+        if len(value) != len(dict_of_results['u235 in mat15563']) and key != 'ampule':
+            dict_of_results[key].append('0')
+    return dict_of_results
 
 
 def wolfram_block_identifier(mcu_input_file: str):

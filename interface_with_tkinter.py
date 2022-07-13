@@ -12,6 +12,7 @@ class App(tk.Tk):
         self.pdc_file = None
         self.rez_file = None
         self.loadings_file = None
+        self.burned = False
 
         super().__init__()
         btn_pdc_file = tk.Button(self, text="Выбрать pdc файл",
@@ -29,6 +30,11 @@ class App(tk.Tk):
         btn_burn_it_file = tk.Button(self, text="JUST BURN IT",
                                      command=self.just_burn_it)
         btn_burn_it_file.pack(padx=60, pady=10)
+
+        if self.burned:
+            btn_predict_reactivity = tk.Button(self, text="Predict reactivity",
+                                         command=self.predict_reactivity)
+            btn_burn_it_file.pack(padx=100, pady=30)
 
         pdc_filename, rez_filename, loadings_filename = None, None, None
 
@@ -58,6 +64,9 @@ class App(tk.Tk):
                      ("Любой", "*"))
         self.loadings_file = fd.askopenfilename(title="Открыть файл", initialdir="/",
                                                filetypes=filetypes)
+
+    def predict_reactivity(self):
+
 
 
     def just_burn_it(self):
