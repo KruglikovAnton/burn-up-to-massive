@@ -4,5 +4,5 @@ Since 2009, computational support for the operation of the reactor, as well as e
 [file_extracters.py](https://github.com/KruglikovAnton/burn-up-to-massive/blob/master/file_extracters.py) contains functions for extracting data from input and output files of MCU programm.<div>
 [interface_with_tkinter.py](https://github.com/KruglikovAnton/burn-up-to-massive/blob/master/interface_with_tkinter.py) contains class for interface app creation.<div>
 In [reactivity_margin_prediction.py](https://github.com/KruglikovAnton/burn-up-to-massive/blob/master/reactivity_margin_prediction.py) a dataframe with data is formed by extracting information from the calculation files starting from 2015.<div>
-[Building_regression_model.ipynb](https://github.com/KruglikovAnton/burn-up-to-massive/blob/master/Building_regression_model.ipynb) contains results of testing diffrent regression models. 
+[Building_regression_model.ipynb](https://github.com/KruglikovAnton/burn-up-to-massive/blob/master/Building_regression_model.ipynb) contains results of testing diffrent regression models. <div>
 All the needed data you can find here.
