@@ -78,9 +78,6 @@ def add_material_from_pdc_for_burn_up(file_to_read: str,
         return dict_of_results
 
 
-
-
-
 def add_material_from_pdc_for_prediction(pdc_file_to_read: str,
                                          materials: list,
                                          nuclides: list = ['u235', 'u238', 'pu39', 'xe35', 'sm49']) -> dict:
@@ -91,7 +88,7 @@ def add_material_from_pdc_for_prediction(pdc_file_to_read: str,
         for nuclide in nuclides:
             dict_of_results[f'{nuclide} in mat{matr_number}'] = []
     with open(pdc_file_to_read, 'r') as pdc_file:
-        scanning=False
+        scanning = False
         for line in pdc_file:
             if line.split()[0] == 'MATR' and int(line.split()[1]) in materials:
                 matr_number = line.split()[1]
@@ -111,9 +108,6 @@ def add_material_from_pdc_for_prediction(pdc_file_to_read: str,
         if len(value) != len(dict_of_results['u235 in mat15563']) and key != 'ampule':
             dict_of_results[key].append('0')
     return dict_of_results
-
-
-
 
 
 def add_material_from_pdc_for_table(fin_file_to_read: str,
@@ -160,7 +154,7 @@ def add_material_from_pdc_for_table_avg_fe(fin_file_to_read: str,
                                            pdc_file_to_read: str,
                                            materials: list,
                                            nuclides: list = ['u235', 'u238', 'pu39', 'xe35', 'sm49'],
-                                            dict_of_results=None) -> dict:
+                                           dict_of_results=None) -> dict:
     """ Adding chosen materials and nuclear densities from pdc files
     """
     if dict_of_results is None:

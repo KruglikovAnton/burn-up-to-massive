@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
+import tensorflow as tf
 import pickle
-
 
 
 class App(tk.Tk):
@@ -106,8 +106,11 @@ class App(tk.Tk):
 
             df_avg_conc['ampule'] = self.ampule_check
 
-            model = pickle.load(open('model.pkl', 'rb'))
-            y_pred = model.predict(df_avg_conc)
+            model = tf.keras.models.load_model('saved_model/1')
+            with open("./saved_model/scaler", "rb") as f_scal:
+                scaler = pickle.load(f_scal)
+            X = scaler.transform(df_avg_conc)
+            y_pred = model.predict(X)
 
             print(some_dict)
             burn_ups = np.zeros((6, 8))
