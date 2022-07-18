@@ -9,8 +9,8 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 import tensorflow as tf
-import pickle
-
+from joblib import load
+import shutil
 
 class App(tk.Tk):
     def __init__(self):
@@ -43,6 +43,9 @@ class App(tk.Tk):
                                       onvalue=1, offvalue=0)
         ampule_check.pack()
 
+        self.tmp_path = Path("temp/")
+        self.tmp_path.mkdir(parents=True, exist_ok=True)
+
     def show_error(self):
         msg = "Не все файлы выбраны"
         mb.showerror("Ошибка", msg)
@@ -53,31 +56,39 @@ class App(tk.Tk):
             pdc_types.append(f'.PDC_B{perhaps_number_of_pdc}')
         filetypes = (("файл pdc", pdc_types),
                      ("Любой", "*"))
-        self.pdc_file = Path(fd.askopenfilename(title="Открыть файл", initialdir="/",
-                                           filetypes=filetypes)).absolute()
-        print(self.pdc_file)
+        pdc_file = Path(fd.askopenfilename(title="Открыть файл", initialdir="/",
+                                                filetypes=filetypes))
+        print(pdc_file.name + ' chosen')
+        shutil.copy(pdc_file, self.tmp_path)
+        self.pdc_file = self.tmp_path / pdc_file.name
+
+
+
 
     def choose_rez_file(self):
         filetypes = (("файл rez", '.REZ'),
                      ("Любой", "*"))
-        self.rez_file = Path(fd.askopenfilename(title="Открыть файл", initialdir="/",
-                                           filetypes=filetypes)).absolute()
+        rez_file = Path(fd.askopenfilename(title="Открыть файл", initialdir="/",
+                                           filetypes=filetypes))
+        shutil.copy(rez_file, self.tmp_path)
+        self.rez_file = self.tmp_path / rez_file.name
 
     def choose_loading_file(self):
         filetypes = (("файл txt", '.txt'),
                      ("Любой", "*"))
-        self.loadings_file = Path(fd.askopenfilename(title="Открыть файл", initialdir="/",
-                                                filetypes=filetypes)).absolute()
+        loadings_file = Path(fd.askopenfilename(title="Открыть файл", initialdir="/",
+                                                filetypes=filetypes))
+        shutil.copy(loadings_file, self.tmp_path)
+        self.loadings_file = self.tmp_path / loadings_file.name
 
     def just_burn_it(self):
-        # print(pdc_filename, rez_filename, loadings_filename)
         if not all([self.pdc_file, self.rez_file, self.loadings_file]):
             self.show_error()
         else:
             some_dict = loadings_file_reader(self.loadings_file)
 
             for cell in some_dict.keys():
-                print(cell)
+                print(f'current cell: {cell}')
                 rez_reader(rez_file=self.rez_file,
                            output_dict=some_dict[cell],
                            materials=some_dict[cell]['zones_numbers'])
@@ -89,7 +100,7 @@ class App(tk.Tk):
                                                              current_concentrations=some_dict[cell]['N'])
                 X = pd.DataFrame(
                     add_material_from_pdc_for_prediction(
-                        '2021-09b.PDC_B0',
+                        self.pdc_file,
                         materials=np.arange(15563, 50123))
                 ).astype(float)
 
@@ -107,12 +118,12 @@ class App(tk.Tk):
             df_avg_conc['ampule'] = self.ampule_check
 
             model = tf.keras.models.load_model('saved_model/1')
-            with open("./saved_model/scaler", "rb") as f_scal:
-                scaler = pickle.load(f_scal)
+            # with open("./saved_model/scaler", "rb") as f_scal:
+            #     scaler = pickle.load(f_scal)
+            scaler = load('./saved_model/scaler.joblib')
             X = scaler.transform(df_avg_conc)
             y_pred = model.predict(X)
-
-            print(some_dict)
+            print('Временные файлы сохранены в temp')
             burn_ups = np.zeros((6, 8))
             for key, value in some_dict.items():
                 burn_ups[int(key[-1]) - 1][int(key[-3]) - 1] = value['burn_up'][0]
@@ -130,7 +141,7 @@ class App(tk.Tk):
 
             props = dict(boxstyle='round', facecolor='wheat')
             ax.text(0.65, 0.6,
-                    s=f'Reactivity margin \n {y_pred[0]: .2f}%',
+                    s=f'Reactivity margin \n {y_pred.ravel()[0]: .2f}%',
                     transform=ax.transAxes,
                     fontsize=14,
                     verticalalignment='top',
