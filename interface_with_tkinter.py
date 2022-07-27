@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 import tensorflow as tf
 from joblib import load
+from sklearn.preprocessing import StandardScaler
 import shutil
 
 class App(tk.Tk):
