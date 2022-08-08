@@ -6,3 +6,14 @@ Since 2009, computational support for the operation of the reactor, as well as e
 In [reactivity_margin_prediction.py](https://github.com/KruglikovAnton/burn-up-to-massive/blob/master/reactivity_margin_prediction.py) a dataframe with data is formed by extracting information from the calculation files starting from 2015.<div>
 [Building_regression_model.ipynb](https://github.com/KruglikovAnton/burn-up-to-massive/blob/master/Building_regression_model.ipynb) contains results of testing diffrent regression models. <div>
 File .exe, created via pyinstaller (probably works in windows 10 only), some examples of input files and also 2 csv file that used in Building_regression_model.ipynb you can find [here](https://drive.google.com/drive/folders/1yNO_Za8HW0RppgdwNVR3oqgTsxKt1bG2?usp=sharing).
+
+The final interface looks like:<div>
+<div align="center">
+  <img src="https://github.com/KruglikovAnton/burn-up-to-massive/blob/master/pictures/interface.png">
+</div>
+<div>
+After calculation result appears with picture:
+<div align="center">
+  <img src=https://github.com/KruglikovAnton/burn-up-to-massive/blob/master/pictures/Figure_1.png>
+</div>
+You can see negative values of -0.2 because the reference uranium loadings for all fuel assemblies were used in the calculation, in fact the burnup in these cells is 0.0.
