@@ -281,4 +281,11 @@ def average_burn_up(volumes: np.array, loadings: np.array, current_concentration
     min_burn_up = np.min(burn_ups)
     return avg_burn_up, max_burn_up, min_burn_up
 
+def Keff_from_FIN(file_name: str) -> float:
+    with open(file_name, 'r') as f:
+        for line in f:
+            if line.startswith(' Keff Briss.'):
+                K_eff = float(line.split()[2])
+    return K_eff
+
 # def loadings_reader_and_changer()
